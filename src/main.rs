@@ -2,6 +2,7 @@ use std::process;
 
 mod lexer;
 mod ast;
+mod parser;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -10,11 +11,12 @@ fn main() {
         return;
     }
     let filename = &args[1];
-    let tokens = lexer::lex(filename).unwrap_or_else(|e| {
+    let mut parser = parser::new(filename).unwrap_or_else(|e| {
         println!("scc: {}", e);
         process::exit(2);
     });
-    for token in tokens {
-        println!("{:?}", token);
-    }
+    parser.parse().unwrap_or_else(|e| {
+        println!("scc: {}", e);
+        process::exit(2);
+    });
 }
