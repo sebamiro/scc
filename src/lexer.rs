@@ -2,77 +2,9 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum Token {
-    // Single-character tokens
-    LeftParen,
-    RightParen,
-    LeftBrace,
-    RightBrace,
-    Comma,
-    Dot,
-    Minus,
-    Plus,
-    Colon,
-    Semicolon,
-    Slash,
-    Star,
+use std::collections::VecDeque;
 
-    // One or two character tokens
-    Bang,
-    BangEqual,
-    Equal,
-    EqualEqual,
-    Greater,
-    GreaterEqual,
-    Less,
-    LessEqual,
-
-    // Literals
-    Identifier(String),
-    Number(i64),
-    String(String),
-
-    // Keywords
-    Break,
-    Case,
-    Char,
-    Const,
-    Constinue,
-    Default,
-    Do,
-    Dobule,
-    Else,
-    Enum,
-    Extern,
-    Float,
-    For,
-    Goto,
-    If,
-    Int,
-    Long,
-    Register,
-    Return,
-    Short,
-    Signed,
-    Sizeof,
-    Static,
-    Struct,
-    Switch,
-    Typedef,
-    Union,
-    Unsigned,
-    Void,
-    Volatile,
-    While,
-
-    Inline,
-    _Bool,
-    _Complex,
-    _Imaginary,
-
-    Restrict,
-}
+use crate::token::Token;
 
 struct Lexer {
     source: String,
@@ -82,7 +14,7 @@ struct Lexer {
 const DELIMITER: &str = " \t\n\r(){}[];,.:,.+-*/%&|^!~<>=";
 
 impl Lexer {
-    fn tokenize(&mut self, tokens: &mut Vec<Token>) {
+    fn tokenize(&mut self, tokens: &mut VecDeque<Token>) {
         for c in self.source.chars().skip(self.current) {
             if c.is_whitespace() {
                 self.current += 1;
@@ -114,10 +46,9 @@ impl Lexer {
         }
     }
 
-    fn advance(&mut self, tokens: &mut Vec<Token>, token: Option<Token>) {
+    fn advance(&mut self, tokens: &mut VecDeque<Token>, token: Option<Token>) {
         if let Some(token) = token {
-
-            tokens.push(token);
+            tokens.push_back(token);
         }
         self.current += 1;
         while let Some(c) = self.source.chars().nth(self.current) {
@@ -131,7 +62,7 @@ impl Lexer {
         }
     }
 
-    fn is_equal(&mut self, tokens: &mut Vec<Token>, default: Token, equal: Token) {
+    fn is_equal(&mut self, tokens: &mut VecDeque<Token>, default: Token, equal: Token) {
         match self.source.chars().nth(self.current + 1) {
             Some('=') => {
                 self.current += 1;
@@ -141,8 +72,9 @@ impl Lexer {
         }
     }
 
-    fn is_identifier(&mut self, tokens: &mut Vec<Token>) {
+    fn is_identifier(&mut self, tokens: &mut VecDeque<Token>) {
         let mut identifier = String::new();
+        // TODO: Literals
         while let Some(c) = self.source.chars().nth(self.current) {
             if DELIMITER.contains(c) {
                 break;
@@ -153,57 +85,57 @@ impl Lexer {
         if identifier.is_empty() {
             return;
         }
-        match identifier.as_str() {
-            "break" => tokens.push(Token::Break),
-            "case" => tokens.push(Token::Case),
-            "char" => tokens.push(Token::Char),
-            "const" => tokens.push(Token::Const),
-            "constinue" => tokens.push(Token::Constinue),
-            "default" => tokens.push(Token::Default),
-            "do" => tokens.push(Token::Do),
-            "dobule" => tokens.push(Token::Dobule),
-            "else" => tokens.push(Token::Else),
-            "enum" => tokens.push(Token::Enum),
-            "extern" => tokens.push(Token::Extern),
-            "float" => tokens.push(Token::Float),
-            "for" => tokens.push(Token::For),
-            "goto" => tokens.push(Token::Goto),
-            "if" => tokens.push(Token::If),
-            "int" => tokens.push(Token::Int),
-            "long" => tokens.push(Token::Long),
-            "register" => tokens.push(Token::Register),
-            "return" => tokens.push(Token::Return),
-            "short" => tokens.push(Token::Short),
-            "signed" => tokens.push(Token::Signed),
-            "sizeof" => tokens.push(Token::Sizeof),
-            "static" => tokens.push(Token::Static),
-            "struct" => tokens.push(Token::Struct),
-            "switch" => tokens.push(Token::Switch),
-            "typedef" => tokens.push(Token::Typedef),
-            "union" => tokens.push(Token::Union),
-            "unsigned" => tokens.push(Token::Unsigned),
-            "void" => tokens.push(Token::Void),
-            "volatile" => tokens.push(Token::Volatile),
-            "while" => tokens.push(Token::While),
-            "Inline" => tokens.push(Token::Inline),
-            "_Bool" => tokens.push(Token::_Bool),
-            "_Complex" => tokens.push(Token::_Complex),
-            "_Imaginary" => tokens.push(Token::_Imaginary),
-            "Restrict" => tokens.push(Token::Restrict),
-            x if x.starts_with("\"") => tokens.push(Token::String(identifier)),
+        tokens.push_back(match identifier.as_str() {
+            "break" => Token::Break,
+            "case" => Token::Case,
+            "char" => Token::Char,
+            "const" => Token::Const,
+            "constinue" => Token::Constinue,
+            "default" => Token::Default,
+            "do" => Token::Do,
+            "dobule" => Token::Dobule,
+            "else" => Token::Else,
+            "enum" => Token::Enum,
+            "extern" => Token::Extern,
+            "float" => Token::Float,
+            "for" => Token::For,
+            "goto" => Token::Goto,
+            "if" => Token::If,
+            "int" => Token::Int,
+            "long" => Token::Long,
+            "register" => Token::Register,
+            "return" => Token::Return,
+            "short" => Token::Short,
+            "signed" => Token::Signed,
+            "sizeof" => Token::Sizeof,
+            "static" => Token::Static,
+            "struct" => Token::Struct,
+            "switch" => Token::Switch,
+            "typedef" => Token::Typedef,
+            "union" => Token::Union,
+            "unsigned" => Token::Unsigned,
+            "void" => Token::Void,
+            "volatile" => Token::Volatile,
+            "while" => Token::While,
+            "Inline" => Token::Inline,
+            "_Bool" => Token::_Bool,
+            "_Complex" => Token::_Complex,
+            "_Imaginary" => Token::_Imaginary,
+            "Restrict" => Token::Restrict,
+            x if x.starts_with("\"") => Token::String(identifier),
             x if x.starts_with(|c: char| c.is_digit(10)) => {
-                tokens.push(Token::Number(identifier.parse::<i64>().unwrap()))
+                Token::Number(identifier.parse::<i64>().unwrap())
             }
-            _ => tokens.push(Token::Identifier(identifier)),
-        }
+            _ => Token::Identifier(identifier),
+        });
         if self.current < self.source.len() {
             self.tokenize(tokens);
         }
     }
 }
 
-pub fn lex(filename: &str) -> Result<Vec<Token>, io::Error> {
-    let mut tokens: Vec<Token> = Vec::new();
+pub fn lex(filename: &str) -> Result<VecDeque<Token>, io::Error> {
+    let mut tokens: VecDeque<Token> = VecDeque::new();
     let lines = read_lines(filename)?;
     for line in lines.flatten() {
         let mut lexer = Lexer {
