@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     // Single-character tokens
     LeftParen,
