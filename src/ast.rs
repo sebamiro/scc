@@ -1,24 +1,24 @@
-use crate::lexer;
+use crate::token;
 
 pub enum Program {
-    Function((lexer::Token, Vec<lexer::Token>, Vec<Statement>)),
+    Function((token::Token, Vec<token::Token>, Vec<Statement>)),
 }
 
 #[derive(Debug)]
 pub enum Statement {
-    Return((lexer::Token, Option<Expression>)),
+    Return((token::Token, Option<Expression>)),
 }
 
 #[derive(Debug)]
 pub enum Expression {
     // literal -> NUMBER | STRING ";"
-    Literal(lexer::Token),
+    Literal(token::Token),
 
     // unary -> ( "-" | "!" ) expression ";"
-    Unary((Option<lexer::Token>, Box<Expression>)),
+    Unary((Option<token::Token>, Box<Expression>)),
 
     // binary -> expression operator expression ";"
-    Binary((Box<Expression>, lexer::Token, Box<Expression>)),
+    Binary((Box<Expression>, token::Token, Box<Expression>)),
 
     // grouping -> "(" expression ")" ";"
     Grouping(Box<Expression>),
