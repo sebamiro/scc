@@ -19,19 +19,14 @@ impl Parser {
         Ok(ast::Program::Function(self.parse_function()?))
     }
 
-    fn parse_function(&mut self) -> Result<(Token, Vec<Token>, Vec<ast::Statement>), String> {
-        println!("Funtion:");
+    fn parse_function(&mut self) -> Result<(Token, Token, Vec<ast::Statement>), String> {
         let func_type = self.consume(Token::Int, "Expected function type")?;
-        println!("type: {:?}", func_type);
         let func_name = self.consume_ident("Expected identifier")?;
-        println!("name: {:?}", func_name);
         self.consume(Token::LeftParen, "Expected LeftParen")?;
         self.consume(Token::RightParen, "Expected RightParen")?;
         // TODO: parse parameters
-        println!("params: []");
         let statements = self.parse_block()?;
-        println!("statements: {:?}", statements);
-        Ok((func_type, vec![func_name], statements))
+        Ok((func_type, func_name, statements))
     }
 
     fn parse_block(&mut self) -> Result<Vec<ast::Statement>, String> {
@@ -81,20 +76,20 @@ impl Parser {
         }
     }
 
-    fn consume(&mut self, token_type: Token, message: &str) -> Result<Token, String> {
-        if self.check(token_type) {
+    fn consume(&mut self, token: Token, err: &str) -> Result<Token, String> {
+        if self.check(token) {
             Ok(self.advance())
         } else {
-            Err(message.to_string())
+            Err(err.to_string())
         }
     }
 
-    fn consume_ident(&mut self, message: &str) -> Result<Token, String> {
+    fn consume_ident(&mut self, err: &str) -> Result<Token, String> {
         match self.peek() {
-            None => Err(message.to_string()),
+            None => Err(err.to_string()),
             Some(token) => match token {
                 Token::Identifier(_) => Ok(self.advance()),
-                _ => Err(message.to_string()),
+                _ => Err(err.to_string()),
             }
         }
     }

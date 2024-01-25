@@ -16,8 +16,9 @@ fn main() {
         println!("scc: {}", e);
         process::exit(2);
     });
-    parser.parse().unwrap_or_else(|e| {
+    let ast = parser.parse().unwrap_or_else(|e| {
         println!("scc: {}", e);
         process::exit(2);
     });
+    ast.print();
 }
