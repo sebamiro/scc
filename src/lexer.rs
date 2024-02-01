@@ -23,7 +23,7 @@ impl Lexer {
             break;
         }
         match self.source.chars().nth(self.current) {
-            None => return,
+            None => {},
             Some(c) => match c {
                 '(' => self.advance(tokens, Some(Token::LeftParen)),
                 ')' => self.advance(tokens, Some(Token::RightParen)),
